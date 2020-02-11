@@ -1,9 +1,12 @@
-const { Router } = require('express');
+import { Router } from 'express';
+import RecipientsController from './app/controllers/RecipientsController.js';
+import SessionController from './app/controllers/SessionController';
 
 const routes = new Router();
 
-routes.get('/', (req, res) => {
-    return res.json({ hello: 'World' })
-})
+routes.post('/recipients', RecipientsController.store);
+routes.get('/recipients', RecipientsController.index);
 
-module.exports = routes;
+routes.post('/sessions', SessionController.store);
+
+export default routes;

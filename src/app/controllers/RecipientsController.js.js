@@ -1,0 +1,54 @@
+import * as Yup from 'yup';
+import Recipients from '../models/Recipients';
+
+class RecipientsController {
+  async store(req, res) {
+    const schema = Yup.object().shape({
+      nome: Yup.string().required(),
+      rua: Yup.string().required(),
+      numero: Yup.string().required(),
+      complemento: Yup.string(),
+      estado: Yup.string().required(),
+      cidade: Yup.string().required(),
+      cep: Yup.string().required(),
+    });
+
+    if (!(await schema.isValid(req.body))) {
+      return res.status(401).json({ error: 'check the data and try again' });
+    }
+
+    const recipientExists = await Recipients.findOne({
+      where: {
+        nome: req.body.nome,
+      },
+    });
+
+    if (recipientExists) {
+      return res.status(401).json({ error: 'this recipient already exists' });
+    }
+
+    const {
+      nome,
+      rua,
+      numero,
+      complemento,
+      estado,
+      cidade,
+      cep,
+    } = await Recipients.create(req.body);
+
+    return res.json({ nome, rua, numero, complemento, estado, cidade, cep });
+  }
+
+  async index(req, res) {
+    const recipients = await Recipients.findAll();
+
+    if (recipients.length === 0) {
+      return res.status(400).json({ error: 'there is no recipients' });
+    }
+
+    return res.json(recipients);
+  }
+}
+
+export default new RecipientsController();
