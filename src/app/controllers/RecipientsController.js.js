@@ -49,6 +49,36 @@ class RecipientsController {
 
     return res.json(recipients);
   }
+
+  async update(req, res) {
+    const { nome } = req.body;
+
+    const { id } = req.params;
+
+    const recipient = await Recipients.findByPk(id);
+
+    if (!recipient) {
+      return res.status(400).json({ error: 'Recipient not found' });
+    }
+
+    if (nome !== recipient.nome) {
+      const recipientExists = await Recipients.findOne({ where: { nome } });
+
+      if (recipientExists) {
+        return res.status(401).json({ error: 'This name is already in use' });
+      }
+    }
+    const {
+      rua,
+      numero,
+      coplemento,
+      estado,
+      cidade,
+      cep,
+    } = await recipient.update(req.body);
+
+    return res.json({ nome, rua, numero, coplemento, estado, cidade, cep });
+  }
 }
 
 export default new RecipientsController();
