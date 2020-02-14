@@ -14,7 +14,7 @@ class RecipientsController {
     });
 
     if (!(await schema.isValid(req.body))) {
-      return res.status(401).json({ error: 'check the data and try again' });
+      return res.status(401).json({ Error: 'check the data and try again' });
     }
 
     const recipientExists = await Recipients.findOne({
@@ -24,7 +24,7 @@ class RecipientsController {
     });
 
     if (recipientExists) {
-      return res.status(401).json({ error: 'this recipient already exists' });
+      return res.status(401).json({ Error: 'this recipient already exists' });
     }
 
     const {
@@ -51,6 +51,14 @@ class RecipientsController {
   }
 
   async update(req, res) {
+    const schema = Yup.object().shape({
+      nome: Yup.string().required(),
+    });
+
+    if (!(await schema.isValid(req.body))) {
+      return res.status(401).json({ Error: 'Missing data, try again' });
+    }
+
     const { nome } = req.body;
 
     const { id } = req.params;
@@ -58,14 +66,14 @@ class RecipientsController {
     const recipient = await Recipients.findByPk(id);
 
     if (!recipient) {
-      return res.status(400).json({ error: 'Recipient not found' });
+      return res.status(400).json({ Error: 'Recipient not found' });
     }
 
     if (nome !== recipient.nome) {
       const recipientExists = await Recipients.findOne({ where: { nome } });
 
       if (recipientExists) {
-        return res.status(401).json({ error: 'This name is already in use' });
+        return res.status(401).json({ Error: 'This name is already in use' });
       }
     }
     const {
