@@ -1,7 +1,6 @@
 import multer from 'multer';
 import crypto from 'crypto';
 import { extname, resolve } from 'path';
-import { finishToken } from 'sucrase/dist/parser/tokenizer';
 
 export default {
   storage: multer.diskStorage({
@@ -10,7 +9,7 @@ export default {
       crypto.randomBytes(16, (err, res) => {
         if (err) return cb(err);
 
-        return cb(null, res, toString('hex') + extname);
+        return cb(null, res.toString('hex') + extname(file.originalname));
       });
     },
   }),
