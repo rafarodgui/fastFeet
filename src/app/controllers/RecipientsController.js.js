@@ -83,9 +83,19 @@ class RecipientsController {
       estado,
       cidade,
       cep,
+      signature_id,
     } = await recipient.update(req.body);
 
-    return res.json({ nome, rua, numero, coplemento, estado, cidade, cep });
+    return res.json({
+      nome,
+      rua,
+      numero,
+      coplemento,
+      estado,
+      cidade,
+      cep,
+      signature_id,
+    });
   }
 }
 

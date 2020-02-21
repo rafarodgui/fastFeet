@@ -9,7 +9,7 @@ module.exports = {
       },
       recipient_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'recipients', key: 'id' },
+        references: { model: 'recipients', key: 'id', as: 'recipient' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
@@ -21,7 +21,7 @@ module.exports = {
       },
       signature_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'signatures', key: 'id' },
+        references: { model: 'recipients', key: 'id', as: 'signature' },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
