@@ -1,6 +1,6 @@
 import Sequelize, { Model } from 'sequelize';
 
-class Orders extends Model {
+class Order extends Model {
   static init(sequelize) {
     super.init(
       {
@@ -22,15 +22,19 @@ class Orders extends Model {
       foreignKey: 'deliveryman_id',
       as: 'deliveryman',
     });
-    this.belongsTo(models.Recipients, {
+    this.belongsTo(models.Recipient, {
       foreignKey: 'recipient_id',
       as: 'recipient',
     });
-    this.belongsTo(models.Recipients, {
+    this.belongsTo(models.Recipient, {
       foreignKey: 'signature_id',
       as: 'signature',
+    });
+    this.belongsTo(models.File, {
+      foreignKey: 'avatar_id',
+      as: 'avatar',
     });
   }
 }
 
-export default Orders;
+export default Order;

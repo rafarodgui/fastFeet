@@ -30,5 +30,6 @@ routes.post('/files', upload.single('file'), FileController.store);
 routes.get('/files', FileController.index);
 
 routes.post('/orders', OrdersController.store);
+routes.get('/orders', OrdersController.index);
 
 export default routes;

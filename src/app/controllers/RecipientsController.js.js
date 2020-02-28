@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import Recipients from '../models/Recipients';
+import Recipient from '../models/Recipient';
 
 class RecipientsController {
   async store(req, res) {
@@ -17,7 +17,7 @@ class RecipientsController {
       return res.status(401).json({ Error: 'check the data and try again' });
     }
 
-    const recipientExists = await Recipients.findOne({
+    const recipientExists = await Recipient.findOne({
       where: {
         nome: req.body.nome,
       },
@@ -35,13 +35,13 @@ class RecipientsController {
       estado,
       cidade,
       cep,
-    } = await Recipients.create(req.body);
+    } = await Recipient.create(req.body);
 
     return res.json({ nome, rua, numero, complemento, estado, cidade, cep });
   }
 
   async index(req, res) {
-    const recipients = await Recipients.findAll();
+    const recipients = await Recipient.findAll();
 
     if (recipients.length === 0) {
       return res.status(400).json({ error: 'there is no recipients' });
@@ -63,14 +63,14 @@ class RecipientsController {
 
     const { id } = req.params;
 
-    const recipient = await Recipients.findByPk(id);
+    const recipient = await Recipient.findByPk(id);
 
     if (!recipient) {
       return res.status(400).json({ Error: 'Recipient not found' });
     }
 
     if (nome !== recipient.nome) {
-      const recipientExists = await Recipients.findOne({ where: { nome } });
+      const recipientExists = await Recipient.findOne({ where: { nome } });
 
       if (recipientExists) {
         return res.status(401).json({ Error: 'This name is already in use' });
