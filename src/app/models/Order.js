@@ -22,6 +22,10 @@ class Order extends Model {
       foreignKey: 'deliveryman_id',
       as: 'deliveryman',
     });
+    this.belongsTo(models.Deliveryman, {
+      foreignKey: 'avatar_id',
+      as: 'avatar',
+    });
     this.belongsTo(models.Recipient, {
       foreignKey: 'recipient_id',
       as: 'recipient',
@@ -29,10 +33,6 @@ class Order extends Model {
     this.belongsTo(models.Recipient, {
       foreignKey: 'signature_id',
       as: 'signature',
-    });
-    this.belongsTo(models.File, {
-      foreignKey: 'avatar_id',
-      as: 'avatar',
     });
   }
 }
