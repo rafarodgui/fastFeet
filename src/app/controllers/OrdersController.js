@@ -29,38 +29,7 @@ class OrdersController {
   }
 
   async index(req, res) {
-    const { id } = req.params;
-
-    if (id) {
-      const orders = await Order.findAll({
-        where: { canceled_at: null, end_date: null, deliveryman_id: id },
-        attributes: ['id', 'product', 'recipient_id', 'start_date', 'end_date'],
-        order: ['id'],
-        include: [
-          {
-            model: Deliveryman,
-            as: 'deliveryman',
-            attributes: ['id', 'name', 'email'],
-          },
-          {
-            model: Recipient,
-            as: 'recipient',
-            attributes: [
-              'nome',
-              'rua',
-              'numero',
-              'complemento',
-              'estado',
-              'cidade',
-              'cep',
-              'signature_id',
-            ],
-          },
-        ],
-      });
-
-      return res.json(orders);
-    }
+    const { page = 1 } = req.query;
 
     const orders = await Order.findAll({
       where: { canceled_at: null, end_date: null },
@@ -73,6 +42,8 @@ class OrdersController {
         'end_date',
       ],
       order: ['id'],
+      limit: 10,
+      offset: (page - 1) * 10,
       include: [
         {
           model: Deliveryman,
