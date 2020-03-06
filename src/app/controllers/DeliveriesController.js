@@ -2,6 +2,7 @@ import * as Yup from 'yup';
 import Order from '../models/Order';
 import Deliveryman from '../models/Deliveryman';
 import Recipient from '../models/Recipient';
+import notification from '../schema/notification';
 
 class DeliveriesController {
   async index(req, res) {
@@ -51,6 +52,10 @@ class DeliveriesController {
     }
 
     const { id } = req.params;
+    let { start_date, end_date } = req.body;
+
+    start_date = null;
+    end_date = null;
 
     const delivery = await Order.findOne({
       where: {
@@ -59,7 +64,15 @@ class DeliveriesController {
         start_date: null,
         end_date: null,
       },
-      attributes: ['id', 'product', 'start_date', 'end_date', 'canceled_at'],
+      attributes: [
+        'id',
+        'product',
+        'start_date',
+        'end_date',
+        'canceled_at',
+        'deliveryman_id',
+        'recipient_id',
+      ],
       include: [
         {
           model: Recipient,
@@ -84,7 +97,21 @@ class DeliveriesController {
 
     await delivery.update(req.body);
 
-    return res.json({ delivery });
+    const recipient = await Recipient.findByPk(delivery.recipient_id);
+    const deliveryman = await Deliveryman.findByPk(delivery.deliveryman_id);
+
+    if (start_date !== delivery.start_date) {
+      /* await notification.create({
+        content: `Dear ${deliveryman.name}, you have a new delivery to ${recipient.nome}`,
+      }); */
+      return res.json({ msg: 'muda a data' });
+    }
+
+    if (end_date !== delivery.end_date) {
+      return res.json({ msg: 'end date alterado' });
+    }
+
+    return res.json({ msg: 'nao muda a data' });
   }
 }
 

@@ -4,6 +4,7 @@ import Order from '../models/Order';
 import Deliveryman from '../models/Deliveryman';
 import Recipient from '../models/Recipient';
 import File from '../models/File';
+import notification from '../schema/notification';
 
 class OrdersController {
   async store(req, res) {
@@ -24,6 +25,18 @@ class OrdersController {
       deliveryman_id,
       signature_id,
     } = await Order.create(req.body);
+
+    /**
+     * Notify deliveryman
+     */
+
+    const deliveryman = await Deliveryman.findByPk(deliveryman_id);
+    const recipient = await Recipient.findByPk(recipient_id);
+
+    await notification.create({
+      content: `Dear ${deliveryman.name}, you have a new delivey to ${recipient.nome}`,
+      user: deliveryman_id,
+    });
 
     return res.json({ product, recipient_id, deliveryman_id, signature_id });
   }
