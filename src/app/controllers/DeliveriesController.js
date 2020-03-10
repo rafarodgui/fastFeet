@@ -1,8 +1,16 @@
 import * as Yup from 'yup';
+import {
+  startOfHour,
+  setHours,
+  parseISO,
+  isBefore,
+  isAfter,
+  startOfDay,
+} from 'date-fns';
+import { Op } from 'sequelize';
 import Order from '../models/Order';
 import Deliveryman from '../models/Deliveryman';
 import Recipient from '../models/Recipient';
-import notification from '../schema/notification';
 
 class DeliveriesController {
   async index(req, res) {
@@ -52,16 +60,13 @@ class DeliveriesController {
     }
 
     const { id } = req.params;
-    let { start_date, end_date } = req.body;
-
-    start_date = null;
-    end_date = null;
+    const { start_date, end_date } = req.body;
 
     const delivery = await Order.findOne({
       where: {
         id,
         canceled_at: null,
-        start_date: null,
+        // start_date: null,
         end_date: null,
       },
       attributes: [
@@ -95,23 +100,19 @@ class DeliveriesController {
       return res.json({ error: 'Ops, no deliveries here' });
     }
 
+    const hourBefore = setHours(startOfDay(new Date()), 8);
+    const hourAfter = setHours(startOfDay(new Date()), 18);
+
+    if (
+      isBefore(parseISO(start_date), hourBefore) ||
+      isAfter(parseISO(start_date), hourAfter)
+    ) {
+      return res.status(400).json({ error: 'Invalid time' });
+    }
+
     await delivery.update(req.body);
 
-    const recipient = await Recipient.findByPk(delivery.recipient_id);
-    const deliveryman = await Deliveryman.findByPk(delivery.deliveryman_id);
-
-    if (start_date !== delivery.start_date) {
-      /* await notification.create({
-        content: `Dear ${deliveryman.name}, you have a new delivery to ${recipient.nome}`,
-      }); */
-      return res.json({ msg: 'muda a data' });
-    }
-
-    if (end_date !== delivery.end_date) {
-      return res.json({ msg: 'end date alterado' });
-    }
-
-    return res.json({ msg: 'nao muda a data' });
+    return res.json(hourBefore);
   }
 }
 
