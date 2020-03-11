@@ -1,13 +1,5 @@
 import * as Yup from 'yup';
-import {
-  startOfHour,
-  setHours,
-  parseISO,
-  isBefore,
-  isAfter,
-  startOfDay,
-} from 'date-fns';
-import { Op } from 'sequelize';
+import { setHours, parseISO, isBefore, isAfter, startOfDay } from 'date-fns';
 import Order from '../models/Order';
 import Deliveryman from '../models/Deliveryman';
 import Recipient from '../models/Recipient';
@@ -51,22 +43,23 @@ class DeliveriesController {
 
   async update(req, res) {
     const schema = Yup.object().shape({
-      start_date: Yup.date(),
-      end_date: Yup.date(),
+      start_date: Yup.date().required(),
     });
 
     if (!(await schema.isValid(req.body))) {
       return res.json({ error: 'Validation fails' });
     }
 
-    const { id } = req.params;
-    const { start_date, end_date } = req.body;
+    const { delivery_id } = req.params;
+    const { deliveryman_id, start_date } = req.body;
+
+    const deliveryman = await Deliveryman.findByPk(deliveryman_id);
 
     const delivery = await Order.findOne({
       where: {
-        id,
+        id: delivery_id,
         canceled_at: null,
-        // start_date: null,
+        start_date: null,
         end_date: null,
       },
       attributes: [
@@ -96,23 +89,37 @@ class DeliveriesController {
       ],
     });
 
+    /**
+     * Deliveryman can just start a delivery if the delivery belongs to him
+     */
+
     if (!delivery) {
       return res.json({ error: 'Ops, no deliveries here' });
     }
 
-    const hourBefore = setHours(startOfDay(new Date()), 8);
-    const hourAfter = setHours(startOfDay(new Date()), 18);
+    if (deliveryman.id !== delivery.deliveryman_id) {
+      return res
+        .status(400)
+        .json({ error: `This delivery dont belongs to ${deliveryman.name}` });
+    }
+
+    const firstHour = setHours(startOfDay(new Date()), 8);
+    const lastHour = setHours(startOfDay(new Date()), 18);
+
+    /**
+     * Deliveryman can just start a delivery between 8am and 6pm
+     */
 
     if (
-      isBefore(parseISO(start_date), hourBefore) ||
-      isAfter(parseISO(start_date), hourAfter)
+      isBefore(parseISO(start_date), firstHour) ||
+      isAfter(parseISO(start_date), lastHour)
     ) {
       return res.status(400).json({ error: 'Invalid time' });
     }
 
     await delivery.update(req.body);
 
-    return res.json(hourBefore);
+    return res.json(delivery);
   }
 }
 

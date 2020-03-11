@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
 
-const notificationSchema = new mongoose.Schema(
+const NotificationSchema = new mongoose.Schema(
   {
     content: {
       type: String,
       required: true,
     },
-    user: {
+    deliveryman_id: {
       type: Number,
       required: true,
     },
@@ -21,4 +21,4 @@ const notificationSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model('notification', notificationSchema);
+export default mongoose.model('Notification', NotificationSchema);

@@ -4,41 +4,43 @@ import Order from '../models/Order';
 import Deliveryman from '../models/Deliveryman';
 import Recipient from '../models/Recipient';
 import File from '../models/File';
-import notification from '../schema/notification';
+import Notification from '../schema/Notification';
 
 class OrdersController {
   async store(req, res) {
     const schema = Yup.object().shape({
       product: Yup.string().required(),
       canceled_at: Yup.date(),
-      start_date: Yup.date(),
-      end_date: Yup.date(),
     });
 
     if (!(await schema.isValid(req.body))) {
       return res.status(401).json({ error: 'Validation fails' });
     }
 
-    const {
-      product,
-      recipient_id,
-      deliveryman_id,
-      signature_id,
-    } = await Order.create(req.body);
+    const { deliveryman_id, recipient_id } = req.body;
+    const deliveryman = await Deliveryman.findByPk(deliveryman_id);
+    const recipient = await Recipient.findByPk(recipient_id);
+
+    if (!deliveryman) {
+      return res.status(400).json({ error: 'Deliveryman not found' });
+    }
+
+    if (!recipient) {
+      return res.status(400).json({ error: 'Recipient not found' });
+    }
+
+    const { product, signature_id } = await Order.create(req.body);
 
     /**
      * Notify deliveryman
      */
 
-    const deliveryman = await Deliveryman.findByPk(deliveryman_id);
-    const recipient = await Recipient.findByPk(recipient_id);
-
-    await notification.create({
-      content: `Dear ${deliveryman.name}, you have a new delivey to ${recipient.nome}`,
-      user: deliveryman_id,
+    await Notification.create({
+      content: `Dear ${deliveryman.name}, you have a ${product} to delivey to ${recipient.nome}`,
+      deliveryman_id,
     });
 
-    return res.json({ product, recipient_id, deliveryman_id, signature_id });
+    return res.json({ product, recipient, deliveryman, signature_id });
   }
 
   async index(req, res) {
@@ -55,8 +57,8 @@ class OrdersController {
         'end_date',
       ],
       order: ['id'],
-      limit: 10,
-      offset: (page - 1) * 10,
+      limit: 20,
+      offset: (page - 1) * 20,
       include: [
         {
           model: Deliveryman,

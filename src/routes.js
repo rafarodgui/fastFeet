@@ -8,17 +8,21 @@ import SessionController from './app/controllers/SessionController';
 import DeliverymanController from './app/controllers/DeliverymanController';
 import FileController from './app/controllers/FileController';
 import OrdersController from './app/controllers/OrdersController';
-import DeliveriesController from './app/controllers/DeliveriesController';
+import StartDeliveryController from './app/controllers/StartDeliveryController';
+import NotificationController from './app/controllers/NotificationController';
+import FinishedDeliveriesController from './app/controllers/FinishedDeliveriesController';
 
 import authMiddleware from './app/middleware/auth';
 
 const routes = new Router();
 const upload = multer(multerConfig);
 
+routes.get('/notifications/:id', NotificationController.index);
+routes.get('/finished_notifications/:id', FinishedDeliveriesController.index);
 routes.post('/sessions', SessionController.store);
 
-routes.get('/deliveries/:id', DeliveriesController.index); // List orders by deliverymans
-routes.put('/deliveries/:id', DeliveriesController.update);
+routes.get('/deliveries/:id', StartDeliveryController.index); // List orders by deliverymans
+routes.put('/deliveries/:delivery_id', StartDeliveryController.update);
 
 routes.use(authMiddleware);
 
