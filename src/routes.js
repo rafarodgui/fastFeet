@@ -9,6 +9,7 @@ import DeliverymanController from './app/controllers/DeliverymanController';
 import FileController from './app/controllers/FileController';
 import OrdersController from './app/controllers/OrdersController';
 import StartDeliveryController from './app/controllers/StartDeliveryController';
+import EndDeliveryController from './app/controllers/EndDeliveryController';
 import NotificationController from './app/controllers/NotificationController';
 import FinishedDeliveriesController from './app/controllers/FinishedDeliveriesController';
 
@@ -19,10 +20,15 @@ const upload = multer(multerConfig);
 
 routes.get('/notifications/:id', NotificationController.index);
 routes.get('/finished_notifications/:id', FinishedDeliveriesController.index);
+routes.put('/notifications/:id', NotificationController.update);
+
 routes.post('/sessions', SessionController.store);
 
 routes.get('/deliveries/:id', StartDeliveryController.index); // List orders by deliverymans
 routes.put('/deliveries/:delivery_id', StartDeliveryController.update);
+
+routes.get('/started_deliveries/:deliveryman_id', EndDeliveryController.index);
+routes.put('/started_deliveries/:delivery_id', EndDeliveryController.update); // Only deliveryman can set end_date
 
 routes.use(authMiddleware);
 

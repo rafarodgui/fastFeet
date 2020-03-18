@@ -5,6 +5,9 @@ import Deliveryman from '../models/Deliveryman';
 import Recipient from '../models/Recipient';
 import File from '../models/File';
 import Notification from '../schema/Notification';
+import Queue from '../../lib/Queue';
+
+import NewDelivery from '../jobs/NewDelivery';
 
 class OrdersController {
   async store(req, res) {
@@ -34,6 +37,12 @@ class OrdersController {
     /**
      * Notify deliveryman
      */
+
+    await Queue.add(NewDelivery.key, {
+      deliveryman,
+      recipient,
+      product,
+    });
 
     await Notification.create({
       content: `Dear ${deliveryman.name}, you have a ${product} to delivey to ${recipient.nome}`,
@@ -146,11 +155,40 @@ class OrdersController {
 
   async delete(req, res) {
     const { id } = req.params;
-    const order = await Order.findByPk(id);
+    const order = await Order.findByPk(id, {
+      include: [
+        {
+          model: Deliveryman,
+          as: 'deliveryman',
+          attributes: ['name', 'email'],
+        },
+        {
+          model: Recipient,
+          as: 'recipient',
+          attributes: ['nome', 'rua'],
+        },
+      ],
+    });
+
+    if (!order) {
+      return res.status(400).json({ error: `Order id ${id} does not exist` });
+    }
 
     order.canceled_at = new Date();
 
     order.save();
+
+    /* await Mail.sendMail({
+      to: `${order.deliveryman.name} <${order.deliveryman.email}>`,
+      subject: 'Cancelled order',
+      template: 'cancellation',
+      context: {
+        deliveryman: order.deliveryman.name,
+        recipient: order.recipient.nome,
+        rua: order.recipient.rua,
+        data: new Date(),
+      },
+    }); */
 
     return res.json(order);
   }

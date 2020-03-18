@@ -53,10 +53,9 @@ class DeliveriesController {
     const { delivery_id } = req.params;
     const { deliveryman_id, start_date } = req.body;
 
-    const deliveryman = await Deliveryman.findByPk(deliveryman_id);
-
     const delivery = await Order.findOne({
       where: {
+        deliveryman_id,
         id: delivery_id,
         canceled_at: null,
         start_date: null,
@@ -89,18 +88,8 @@ class DeliveriesController {
       ],
     });
 
-    /**
-     * Deliveryman can just start a delivery if the delivery belongs to him
-     */
-
     if (!delivery) {
       return res.json({ error: 'Ops, no deliveries here' });
-    }
-
-    if (deliveryman.id !== delivery.deliveryman_id) {
-      return res
-        .status(400)
-        .json({ error: `This delivery dont belongs to ${deliveryman.name}` });
     }
 
     const firstHour = setHours(startOfDay(new Date()), 8);
@@ -109,7 +98,6 @@ class DeliveriesController {
     /**
      * Deliveryman can just start a delivery between 8am and 6pm
      */
-
     if (
       isBefore(parseISO(start_date), firstHour) ||
       isAfter(parseISO(start_date), lastHour)
