@@ -8,8 +8,6 @@ class NewDelivery {
   async handle({ data }) {
     const { deliveryman, recipient, product } = data;
 
-    console.log('Tudo ok');
-
     await Mail.sendMail({
       to: `${deliveryman.name} <${deliveryman.email}>`,
       subject: 'Você tem uma nova encomenda!',
