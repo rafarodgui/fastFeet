@@ -3,17 +3,20 @@ import { isBefore } from 'date-fns';
 import Order from '../models/Order';
 import Deliveryman from '../models/Deliveryman';
 import Recipient from '../models/Recipient';
+import DeliveryProblems from '../models/DeliveryProblems';
 import File from '../models/File';
 import Notification from '../schema/Notification';
 import Queue from '../../lib/Queue';
 
 import NewDelivery from '../jobs/NewDelivery';
+import CancellationMail from '../jobs/CancellationMail';
 
 class OrdersController {
   async store(req, res) {
     const schema = Yup.object().shape({
       product: Yup.string().required(),
-      canceled_at: Yup.date(),
+      deliveryman_id: Yup.number().required(),
+      recipient_id: Yup.number().required(),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -56,7 +59,6 @@ class OrdersController {
     const { page = 1 } = req.query;
 
     const orders = await Order.findAll({
-      where: { canceled_at: null, end_date: null },
       attributes: [
         'id',
         'product',
@@ -88,7 +90,6 @@ class OrdersController {
             'estado',
             'cidade',
             'cep',
-            'signature_id',
           ],
         },
       ],
@@ -155,7 +156,14 @@ class OrdersController {
 
   async delete(req, res) {
     const { id } = req.params;
-    const order = await Order.findByPk(id, {
+
+    const deliveryProblem = await DeliveryProblems.findByPk(id);
+
+    if (!deliveryProblem) {
+      return res.status(400).json({ error: 'Delivery Problem not found' });
+    }
+
+    const order = await Order.findByPk(deliveryProblem.delivery_id, {
       include: [
         {
           model: Deliveryman,
@@ -178,19 +186,15 @@ class OrdersController {
 
     order.save();
 
-    /* await Mail.sendMail({
-      to: `${order.deliveryman.name} <${order.deliveryman.email}>`,
-      subject: 'Cancelled order',
-      template: 'cancellation',
-      context: {
-        deliveryman: order.deliveryman.name,
-        recipient: order.recipient.nome,
-        rua: order.recipient.rua,
-        data: new Date(),
-      },
-    }); */
+    const deliveryman = await Deliveryman.findByPk(order.deliveryman_id);
+    const recipient = await Recipient.findByPk(order.recipient_id);
 
-    return res.json(order);
+    await Queue.add(CancellationMail.key, {
+      deliveryman,
+      recipient,
+    });
+
+    return res.json({ order, deliveryProblem });
   }
 }
 

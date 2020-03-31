@@ -12,7 +12,7 @@ class NotificationController {
     }
 
     const notifications = await Notification.find({
-      deliveryman_id: id,
+      deliveryman,
     })
       .sort('createdAt')
       .limit(15);

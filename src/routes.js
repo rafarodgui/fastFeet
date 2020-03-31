@@ -8,27 +8,39 @@ import SessionController from './app/controllers/SessionController';
 import DeliverymanController from './app/controllers/DeliverymanController';
 import FileController from './app/controllers/FileController';
 import OrdersController from './app/controllers/OrdersController';
-import StartDeliveryController from './app/controllers/StartDeliveryController';
-import EndDeliveryController from './app/controllers/EndDeliveryController';
+import DeliveryController from './app/controllers/DeliveryController';
 import NotificationController from './app/controllers/NotificationController';
 import FinishedDeliveriesController from './app/controllers/FinishedDeliveriesController';
+import DeliveryProblemController from './app/controllers/DeliveryProblemsController';
+import AllDeliveryProblemController from './app/controllers/AllDeliveryProblemController';
 
 import authMiddleware from './app/middleware/auth';
 
 const routes = new Router();
 const upload = multer(multerConfig);
 
-routes.get('/notifications/:id', NotificationController.index);
-routes.get('/finished_notifications/:id', FinishedDeliveriesController.index);
-routes.put('/notifications/:id', NotificationController.update);
-
 routes.post('/sessions', SessionController.store);
 
-routes.get('/deliveries/:id', StartDeliveryController.index); // List orders by deliverymans
-routes.put('/deliveries/:delivery_id', StartDeliveryController.update);
+routes.get('/notifications/:id', NotificationController.index);
+routes.put('/notifications/:id', NotificationController.update);
 
-routes.get('/started_deliveries/:deliveryman_id', EndDeliveryController.index);
-routes.put('/started_deliveries/:delivery_id', EndDeliveryController.update); // Only deliveryman can set end_date
+// List orders by deliverymans
+routes.get('/deliveryman/:deliveryman_id/deliveries', DeliveryController.index);
+
+// Deliveryman can change the status of start_date and end_date
+routes.put(
+  '/deliveryman/:deliveryman_id/delivery/:delivery_id',
+  DeliveryController.update
+);
+
+routes.get(
+  '/deliveryman/:id/finished_deliveries',
+  FinishedDeliveriesController.index
+);
+
+routes.post('/delivery/:id/problems', DeliveryProblemController.store);
+
+routes.get('/delivery/:id/problems', DeliveryProblemController.index);
 
 routes.use(authMiddleware);
 
@@ -46,6 +58,9 @@ routes.get('/files', FileController.index);
 routes.post('/orders', OrdersController.store);
 routes.get('/orders', OrdersController.index); // List all orders
 routes.put('/orders/:id', OrdersController.update);
-routes.delete('/orders/:id', OrdersController.delete);
+
+routes.delete('/problem/:id/cancel_delivery', OrdersController.delete);
+
+routes.get('/all_delivery_with_problems', AllDeliveryProblemController.index);
 
 export default routes;

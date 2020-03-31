@@ -21,7 +21,7 @@ module.exports = {
       },
       signature_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'recipients', key: 'id', as: 'signature' },
+        references: { model: 'files', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },

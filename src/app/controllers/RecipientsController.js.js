@@ -83,7 +83,6 @@ class RecipientsController {
       estado,
       cidade,
       cep,
-      signature_id,
     } = await recipient.update(req.body);
 
     return res.json({
@@ -94,7 +93,6 @@ class RecipientsController {
       estado,
       cidade,
       cep,
-      signature_id,
     });
   }
 }

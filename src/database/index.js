@@ -8,8 +8,9 @@ import Recipient from '../app/models/Recipient';
 import Deliveryman from '../app/models/Deliveryman';
 import Order from '../app/models/Order';
 import File from '../app/models/File';
+import DeliveryProblems from '../app/models/DeliveryProblems';
 
-const models = [Admin, Recipient, Deliveryman, File, Order];
+const models = [Admin, Recipient, Deliveryman, File, Order, DeliveryProblems];
 
 class Database {
   constructor() {
@@ -29,7 +30,7 @@ class Database {
 
   mongo() {
     this.mongoConnection = mongoose.connect(
-      'mongodb://localhost:27017/fastfeet',
+      'mongodb://192.168.99.100:27017/fastfeet',
       {
         useNewUrlParser: true,
         useFindAndModify: true,
